@@ -36,10 +36,14 @@ def round_up_to_nearest(original_value,rounding_multiple):
     result = math.ceil(original_value/rounding_multiple)*rounding_multiple
     return result
 
+def report_recommended_cosmos_scale_for_sparkdf(upload_df:DataFrame)->None:
+    raw_json_bytes = get_raw_json_bytes(upload_df)
+    report_recommended_cosmos_scale_for_jsonbytes(raw_json_bytes)
+
+
 
 # you will need to know the raw json bytes you are dealing with for the full collection first
-def report_recommended_cosmos_scale(df_to_upload:DataFrame)->None:
-    raw_json_bytes = get_raw_json_bytes(DATAFRAME_TO_UPLOAD)
+def report_recommended_cosmos_scale_for_jsonbytes(raw_json_bytes:int)->None:
     # calculate out how cosmos will measure its stored GB
     cosmos_stored_kib = raw_json_bytes * cosmos_bytes_per_json_bytes / 1024             # cosmos works with a base unit of KiB
     cosmos_stored_gb = cosmos_stored_kib / 1000 / 1000                                  # cosmos does 10^3 scaling on KiB to determine GB, not 2^10 like GiB
