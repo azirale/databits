@@ -2,7 +2,7 @@
 
 A forward note, this text will use 'meaning' to refer to the actual real-word semantic meaning of something. That is the representation of some business state or real-world fact or statistic. The word 'value' will refer to underlying data and its type, such as a string value or instance of an object. The term 'raw binary' refers to the baseline 'bits' that store the 'value' itself.
 
-Any `code` formatting that starts with `0x` is a hexadecimal representation of raw binary, where the characters after the `x` are the number.
+Any `code` formatting that starts with `0x` is a hexadecimal representation of raw binary, where the characters after the `x` are the number. Similarly `0b` prefixed code formatting is a direct binary representation.
 
 ## Semantics
 
@@ -192,7 +192,7 @@ Binary can only take on meaning when it is interpreted through some form of enco
 
 For example, what does this mean, what even is it?
 
-`0x01100100011000011011010011000001`
+`0b01100100011000011011010011000001`
 
 #### Structure
 
