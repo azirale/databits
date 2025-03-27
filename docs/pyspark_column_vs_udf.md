@@ -87,7 +87,8 @@ from pyspark.sql import Column
 def create_hashdiff_col(input_column_names:list[str])->Column:
     """Standard way to define a hashdiff column."""
     as_stringtypes = [F.col(colname).cast("STRING") for colname in input_column_names]
-    concatted = F.concat_ws("|",*as_stringtypes)
+    null_differentiated = [F.coalesce(col,F.lit("~~NULL~~")) for col in as_stringtypes]
+    concatted = F.concat_ws("|",*null_differentiated)
     hashed = F.sha2(concatted,256)
     default_named = hashed.alias("HASHDIFF")
     return default_named

@@ -86,6 +86,7 @@ def scd2(
 
 def hashdiff(compare_colnames: list[str]) -> Column:
     as_strings = [F.col(colname).cast("STRING") for colname in compare_colnames]
-    concatenated = F.concat_ws("|", *as_strings)
+    null_differentiated = [F.coalesce(col,F.lit("~~NULL~~")) for col in as_strings]
+    concatenated = F.concat_ws("|", *null_differentiated)
     hashed = F.sha2(concatenated, 256)
     return hashed
