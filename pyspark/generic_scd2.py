@@ -3,26 +3,28 @@ import pyspark.sql.functions as F
 
 
 def scd2(
-    df: DataFrame,
-    key_colnames: list[str],
+    input_df: DataFrame,
+    entity_key_colnames: list[str],
     start_colname: str,
-    end_colname: str,
+    # if you are re-slicing an existing SCD2 specify existing end column
+    # set to `None` if you just have a single 'effective as of' stamp on the row
+    end_colname: str|None,
     high_end_literal: Column,
 ) -> DataFrame:
     descriptive_colnames = [
         colname
-        for colname in df.columns
-        if colname not in [*key_colnames, start_colname, end_colname]
+        for colname in input_df.columns
+        if colname not in [*entity_key_colnames, start_colname, end_colname]
     ]
-    window = W.partitionBy(*key_colnames).orderBy("_CURRENT_START", "_CURRENT_END")
+    window = W.partitionBy(*entity_key_colnames).orderBy("_CURRENT_START", "_CURRENT_END")
     output_df = (
-        df
+        input_df
         # add the hashdiff over the descriptive column, and make copies of the start-end with consistent names within this function
         .withColumns(
             {
                 "_CURRENT_HASHDIFF": hashdiff(descriptive_colnames),
                 "_CURRENT_START": F.col(start_colname),
-                "_CURRENT_END": F.col(end_colname),
+                "_CURRENT_END": F.col(end_colname) if end_colname else high_end_literal,
             }
         )
         # set ourselves up with lead and lag values that will be needed to determine new start-end timestamps
@@ -77,7 +79,7 @@ def scd2(
                 end_colname: F.col("_CURRENT_END"),
             }
         )
-        .select(*df.columns)
+        .select(*input_df.columns)
     )
     return output_df
 
