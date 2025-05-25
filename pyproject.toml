@@ -5,7 +5,7 @@ description = "This is really just to make it easier for an IDE w/ LSP"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "daft>=0.4.7",
-    "polars>=1.25.2",
-    "pyspark>=3.5.5",
+    "daft>=0.4.16",
+    "polars>=1.30.0",
+    "pyspark>=4.0.0",
 ]
