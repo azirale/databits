@@ -1,3 +1,18 @@
+# THIS IS A DEMO ONLY
+# This will not have perfect programming practices
+# This does not have macro features for DBT
+# This is just to show logic for how to filter/join/window to combine date effectivity ranges
+# The logic *can* adjust to timestamps, it does not require dates
+# Actually it only requires that the 'start_at' and 'end_at' values are correctly sortable
+# It DOES ALSO RELY on use of 'exclusive' end values -- that is one 'end_at' is the next 'start_at'
+# ^ this is slightly different to how some places do it and requires use of '<end_at' instead of '<=end_at'
+
+# REQUIRES THESE MODULES
+# pip install duckdb tabulate
+
+# MAKE SURE YOU ARE RUNNING PYTHON FROM INSIDE THIS DIRECTORY
+# THE FILE PATHS FOR LOADING CSV FILES ARE RELATIVE TO YOUR WORKING DIRECTORY
+
 import duckdb
 import tabulate
 
@@ -36,12 +51,8 @@ def import_dims(folder_name: str) -> None:
     # getting our starting state with a variety of scd2 dims
     # note that we are using 'exclusive' end_at values, not 'inclusive'
     for table_name in ["dim_a", "dim_b", "dim_c"]:
-        _ = db.execute(
-            f"""CREATE OR REPLACE TABLE {table_name} (cust_id VARCHAR(32),start_at DATE,end_at DATE);"""
-        )
-        _ = db.execute(
-            f"""INSERT INTO {table_name} SELECT * FROM read_csv('{folder_name}/{table_name}.csv');"""
-        )
+        _ = db.execute(f"""CREATE OR REPLACE TABLE {table_name} (cust_id VARCHAR(32),start_at DATE,end_at DATE);""")
+        _ = db.execute(f"""INSERT INTO {table_name} SELECT * FROM read_csv('{folder_name}/{table_name}.csv');""")
         _ = db.commit()
 
 
@@ -77,15 +88,9 @@ def new_timepoints_query(dim_tablename: str) -> str:
 def update_combined_dim_table() -> None:
     # put the scraped dates into dedicated tables to work with them more easily
     # note that according to 'new_timepoints_query' this is ONLY the data not already covered in dim_all
-    db.execute(
-        f"CREATE OR REPLACE TABLE temp_dim_a_timepoints AS SELECT * FROM ({new_timepoints_query('dim_a')})"
-    )
-    db.execute(
-        f"CREATE OR REPLACE TABLE temp_dim_b_timepoints AS SELECT * FROM ({new_timepoints_query('dim_b')})"
-    )
-    db.execute(
-        f"CREATE OR REPLACE TABLE temp_dim_c_timepoints AS SELECT * FROM ({new_timepoints_query('dim_c')})"
-    )
+    db.execute(f"CREATE OR REPLACE TABLE temp_dim_a_timepoints AS SELECT * FROM ({new_timepoints_query('dim_a')})")
+    db.execute(f"CREATE OR REPLACE TABLE temp_dim_b_timepoints AS SELECT * FROM ({new_timepoints_query('dim_b')})")
+    db.execute(f"CREATE OR REPLACE TABLE temp_dim_c_timepoints AS SELECT * FROM ({new_timepoints_query('dim_c')})")
     # combine all the scraped dates from all dims into one big table and dedupe dates common across source tables
     db.execute(
         """
@@ -148,6 +153,7 @@ def update_combined_dim_table() -> None:
         """
     )
 
+
 # will wipe the target table so this is all re-runnable
 reset_alldim_table()
 
@@ -174,9 +180,9 @@ import_dims("following_data")
 
 # we can see that only dim_a has data being picked up by the new_timepoints_query
 # all the other dims are only bringing in their 'current' data - if it exists (it does not for dim_c)
-showme(new_timepoints_query('dim_a')) # new row only
-showme(new_timepoints_query('dim_b')) # latest existing row only
-showme(new_timepoints_query('dim_c')) # no relevant data at this timepoint
+showme(new_timepoints_query("dim_a"))  # new row only
+showme(new_timepoints_query("dim_b"))  # latest existing row only
+showme(new_timepoints_query("dim_c"))  # no relevant data at this timepoint
 
 # the process works exactly the same
 update_combined_dim_table()
